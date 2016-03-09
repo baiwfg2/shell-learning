@@ -6,6 +6,6 @@ ext=.gif
 
 while [ $num -le 204 ]
 do
-	wget /tmp/$url$num$ext
+	wget $url$num$ext -P /tmp/qq-face
 	num=$((++num))
 done
