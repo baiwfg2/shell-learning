@@ -34,6 +34,7 @@ RPMFORGE_REPO=rpmforge-release-0.5.3-1.el7.rf.x86_64.rpm
 RPMFUSION_FREE_REPO=
 RPMFUSION_NONFREE_REPO=
 
+MYHOME=/home/cshi
 BIN_DIR=/home/cshi/bin
 SETUP_DIR=/home/cshi/setup
 
@@ -65,6 +66,11 @@ wget_and_untar() {
 test_error() {
 	test $? != 0 && echo "$1 failed" && exit 1
 }
+
+# install common packages
+if ! rpm -qa | grep python-devel >/dev/null 2>&1; then
+	echo y | yum install python-devel libpng-devel freetype-devel
+fi
 
 # basic directory creation
 if [ ! -d $BIN_DIR ]; then
@@ -164,7 +170,9 @@ if [ ! -e $SETUP_DIR/$EPEL_REPO ]; then
 	rpm -ivh $EPEL_REPO
 fi
 
-if [ ! `rpm -qa | grep 'htop'` ]; then
+if rpm -qa | grep 'htop' >/dev/null 2>&1; then
+	:
+else
 	yum install htop qt5-qtbase qt5-qtbase-gui
 fi
 
@@ -174,7 +182,9 @@ if [ ! -e $SETUP_DIR/$RPMFORGE_REPO ]; then
 	rpm -ivh $RPMFORGE_REPO
 fi
 
-if [ ! `rpm -qa | grep "htop"` ]; then
+if rpm -qa | grep "rar" >/dev/null 2>&1; then
+	:
+else
 	echo y | yum install rar unrar p7zip
 fi
 
@@ -191,5 +201,16 @@ yum localinstall --nogpgcheck http://mirrors.aliyun.com/rpmfusion/nonfree/el/upd
 #yum localinstall --nogpgcheck http://download1.rpmfusion.org/nonfree/el/updates/6/i386/rpmfusion-nonfree-release-6-1.noarch.rpm
 
 
+# add python repo
+PYCONF=$MYHOME/.pip/pip.conf
+test ! -e $MYHOME/.pip && mkdir $MYHOME/.pip
+test ! -e $PYCONF && touch $PYCONF
+if ! grep aliyun $PYCONF >/dev/null 2>&1; then
+	cat << EOF >>$PYCONF
+[global]
+index-url=http://mirrors.aliyun.com/pypi/simple
+EOF
+fi
+	
 # Upon success, delete all folders
 rm -rf ${NTFS_3G_GZ%%.*} ${FLASH_PLUGIN_X64_GZ%%.*} ${YUM_REPO%.*}
