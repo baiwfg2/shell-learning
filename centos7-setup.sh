@@ -26,7 +26,13 @@ FLASH_PLUGIN_X86_RPM=flash-plugin-x86-11.2.rpm
 FLASH_PLUGIN_X64_GZ=flash_player_11-x86_64.tar.gz
 
 NTFS_3G_GZ=ntfs-3g.tar.gz
-PACKAGE_ARGS="sublime_text_3.tar.gz"
+ST3=sublime_text_3_build_3047_x64.tar.bz2
+
+# maybe it's not 7.6,check it out
+EPEL_REPO=epel-release-7-6.noarch.rpm
+RPMFORGE_REPO=rpmforge-release-0.5.3-1.el7.rf.x86_64.rpm
+RPMFUSION_FREE_REPO=
+RPMFUSION_NONFREE_REPO=
 
 BIN_DIR=/home/cshi/bin
 SETUP_DIR=/home/cshi/setup
@@ -57,7 +63,7 @@ wget_and_untar() {
 }
 
 test_error() {
-	test "$?" ! = 0 && echo "$1 failed" && exit 1
+	test $? != 0 && echo "$1 failed" && exit 1
 }
 
 # basic directory creation
@@ -133,22 +139,14 @@ else
 	echo 'nfts-3g installed'
 fi
 
-for i in $PACKAGE_ARGS
-do
-	if [ ! -e $i ]; then
-		wget $URL_SOFT/$i
-	fi
-	tar xzf $i
-
-	dir=${i%%.*}
-	if [ ! -d $SETUP_DIR/$dir ]; then
-		mv $dir $SETUP_DIR/
-	else
-		echo "${i%%.*} installed"
-	fi
-done
-
-ln -sf $SETUP_DIR/sublime_text_3/sublime_text $BIN_DIR
+# sublime_text_3
+if [ ! -e $ST3 ]; then
+	wget $URL_SOFT/$i
+fi
+if [ ! -e $SETUP_DIR/sublime_text_3 ];then
+	tar xjf $ST3
+	ln -sf $SETUP_DIR/sublime_text_3/sublime_text $BIN_DIR
+fi
 
 # If uninstalled, then install them with apt-get, yum or some other tools
 which yum >/dev/null 2>&1
@@ -159,5 +157,39 @@ else
 	! which tree >dev/null 2>&1 && echo y | sudo apt-get install tree
 fi
 
+# install extra repo
+#epel
+if [ ! -e $SETUP_DIR/$EPEL_REPO ]; then
+	wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/$EPEL_REPO -P $SETUP_DIR
+	rpm -ivh $EPEL_REPO
+fi
+
+if [ ! `rpm -qa | grep 'htop'` ]; then
+	yum install htop qt5-qtbase qt5-qtbase-gui
+fi
+
+#rpmforge
+if [ ! -e $SETUP_DIR/$RPMFORGE_REPO ]; then
+	wget http://apt.sw.be/redhat/el7/en/x86_64/rpmforge/RPMS/$RPMFORGE_REPO -P $SETUP_DIR
+	rpm -ivh $RPMFORGE_REPO
+fi
+
+if [ ! `rpm -qa | grep "htop"` ]; then
+	echo y | yum install rar unrar p7zip
+fi
+
+#remi
+#yum localinstall --nogpgcheck http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+
+#rmpfusion
+#aliyun mirror
+yum localinstall --nogpgcheck http://mirrors.aliyun.com/rpmfusion/free/el/updates/6/x86_64/rpmfusion-free-release-6-1.noarch.rpm
+yum localinstall --nogpgcheck http://mirrors.aliyun.com/rpmfusion/nonfree/el/updates/6/x86_64/rpmfusion-nonfree-release-6-1.noarch.rpm
+
+# authoriative mirror
+#yum localinstall --nogpgcheck http://download1.rpmfusion.org/free/el/updates/6/i386/rpmfusion-free-release-6-1.noarch.rpm 
+#yum localinstall --nogpgcheck http://download1.rpmfusion.org/nonfree/el/updates/6/i386/rpmfusion-nonfree-release-6-1.noarch.rpm
+
+
 # Upon success, delete all folders
-rm -rf ${NTFS_3G_GZ%%.*} ${FLASH_PLUGIN_X64_GZ%%.*}
+rm -rf ${NTFS_3G_GZ%%.*} ${FLASH_PLUGIN_X64_GZ%%.*} ${YUM_REPO%.*}
