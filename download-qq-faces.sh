@@ -9,3 +9,5 @@ do
 	wget $url$num$ext -P /tmp/qq-face
 	num=$((++num))
 done
+
+echo "QQ Face downloaded at /tmp/qq-face"
