@@ -1,5 +1,10 @@
 #!/bin/sh 
 
+faces="smile upset sexy stupefied proud
+	cry shy shut-mouse sleepy big-cry
+	embarrassed angry naughty grin
+	surprised sad handsome cold-sweat hysteric"
+
 url=http://cache.soso.com/img/img/e
 num=100
 ext=.gif
